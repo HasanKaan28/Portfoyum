@@ -1,0 +1,33 @@
+{
+  "name": "friendly-bardeen",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~57.0.20",
+    "expo-device": "~57.0.1",
+    "expo-haptics": "~57.0.2",
+    "expo-notifications": "~57.0.17",
+    "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-svg": "15.15.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.2",
+    "jest": "^30.5.1",
+    "ts-jest": "^29.4.12",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "test": "jest"
+  },
+  "private": true
+}
