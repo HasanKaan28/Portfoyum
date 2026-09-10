@@ -19,7 +19,7 @@ export function runDailyPortfolioAnalysis(
       topGainerDaily: null,
       topLoserDaily: null,
       topGainerWeekly: null,
-      categoryDistribution: { bist_stock: 0, tefas_fund: 0, halka_arz: 0, gold: 0, forex: 0 },
+      categoryDistribution: { bist_stock: 0, tefas_fund: 0, halka_arz: 0, gold: 0, forex: 0, crypto: 0 },
       recommendations: [
         {
           id: 'add_assets',
@@ -51,6 +51,7 @@ export function runDailyPortfolioAnalysis(
     halka_arz: 0,
     gold: 0,
     forex: 0,
+    crypto: 0,
   };
 
   interface EvaluatedAsset {
@@ -97,6 +98,7 @@ export function runDailyPortfolioAnalysis(
     halka_arz: Math.round(((categoryTotals.halka_arz || 0) / safeTotal) * 100),
     gold: Math.round(((categoryTotals.gold || 0) / safeTotal) * 100),
     forex: Math.round(((categoryTotals.forex || 0) / safeTotal) * 100),
+    crypto: Math.round(((categoryTotals.crypto || 0) / safeTotal) * 100),
   };
 
   // Sort by performance

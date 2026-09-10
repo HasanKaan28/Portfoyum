@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, LayoutAnimation } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -19,19 +19,20 @@ interface AssetListProps {
 
 type FilterCategory = 'all' | AssetCategory;
 
-const CATEGORY_TABS: { key: FilterCategory; label: string }[] = [
-  { key: 'all', label: 'Tümü' },
-  { key: 'halka_arz', label: '🚀 Halka Arz' },
-  { key: 'bist_stock', label: 'BIST Hisse' },
-  { key: 'tefas_fund', label: 'TEFAS Fon' },
-  { key: 'gold', label: 'Altın/Emtia' },
-  { key: 'forex', label: 'Döviz' },
+const CATEGORY_TABS: { key: FilterCategory; label: string; icon: string }[] = [
+  { key: 'all', label: 'Tümü', icon: 'grid-outline' },
+  { key: 'bist_stock', label: 'BIST Hisse', icon: 'trending-up-outline' },
+  { key: 'halka_arz', label: 'Halka Arz', icon: 'rocket-outline' },
+  { key: 'crypto', label: 'Kripto', icon: 'logo-bitcoin' },
+  { key: 'gold', label: 'Altın/Emtia', icon: 'cube-outline' },
+  { key: 'tefas_fund', label: 'TEFAS Fon', icon: 'layers-outline' },
+  { key: 'forex', label: 'Döviz', icon: 'cash-outline' },
 ];
 
 const VIEW_MODES: { key: ViewMode; label: string; icon: string }[] = [
   { key: 'daily', label: 'Günlük (24S)', icon: 'today-outline' },
   { key: 'weekly', label: 'Haftalık (7G)', icon: 'calendar-outline' },
-  { key: 'total', label: 'Toplam', icon: 'pie-chart-outline' },
+  { key: 'total', label: 'Toplam (Net)', icon: 'pie-chart-outline' },
 ];
 
 export const AssetList: React.FC<AssetListProps> = ({
@@ -58,6 +59,16 @@ export const AssetList: React.FC<AssetListProps> = ({
     return price;
   };
 
+  // Live count per category for badge indicators
+  const categoryCounts = useMemo(() => {
+    const counts: { [key: string]: number } = { all: assets.length };
+    assets.forEach((a) => {
+      const cat = a.category;
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [assets]);
+
   const filteredAssets = assets.filter((asset) => {
     const matchesCategory =
       selectedCategory === 'all' ||
@@ -71,8 +82,8 @@ export const AssetList: React.FC<AssetListProps> = ({
     return matchesCategory && matchesSearch;
   });
 
-  // Calculate total weekly profit for the weekly summary banner
-  const { totalWeeklyProfit, topWeeklyAsset } = React.useMemo<{
+  // Calculate total weekly profit
+  const { totalWeeklyProfit, topWeeklyAsset } = useMemo<{
     totalWeeklyProfit: number;
     topWeeklyAsset: { symbol: string; profit: number; percent: number } | null;
   }>(() => {
@@ -104,7 +115,7 @@ export const AssetList: React.FC<AssetListProps> = ({
       <View
         style={[
           styles.viewModeContainer,
-          { backgroundColor: isDark ? '#1E293B' : '#E2E8F0', borderColor: colors.border },
+          { backgroundColor: isDark ? '#111827' : '#E2E8F0', borderColor: colors.border },
         ]}
       >
         {VIEW_MODES.map((mode) => {
@@ -118,8 +129,8 @@ export const AssetList: React.FC<AssetListProps> = ({
                   backgroundColor: colors.card,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
+                  shadowOpacity: 0.14,
+                  shadowRadius: 6,
                   elevation: 2,
                 },
               ]}
@@ -140,7 +151,7 @@ export const AssetList: React.FC<AssetListProps> = ({
                   styles.viewModeText,
                   {
                     color: isSelected ? colors.primary : colors.textSecondary,
-                    fontWeight: isSelected ? '800' : '600',
+                    fontWeight: isSelected ? '900' : '600',
                   },
                 ]}
               >
@@ -151,7 +162,7 @@ export const AssetList: React.FC<AssetListProps> = ({
         })}
       </View>
 
-      {/* Weekly Highlight Banner when Weekly Mode is Active */}
+      {/* Weekly Highlight Banner */}
       {viewMode === 'weekly' && (
         <View
           style={[
@@ -166,7 +177,7 @@ export const AssetList: React.FC<AssetListProps> = ({
             <View style={styles.weeklyBannerHeader}>
               <Ionicons
                 name="calendar"
-                size={16}
+                size={15}
                 color={isWeeklyProfitable ? colors.profit : colors.loss}
               />
               <Text
@@ -175,7 +186,7 @@ export const AssetList: React.FC<AssetListProps> = ({
                   { color: isWeeklyProfitable ? colors.profit : colors.loss },
                 ]}
               >
-                SON 7 GÜNLÜK NET KÂR / ZARAR
+                SON 7 GÜNLÜK NET PERFORMANS
               </Text>
             </View>
             <Text
@@ -202,23 +213,23 @@ export const AssetList: React.FC<AssetListProps> = ({
         </View>
       )}
 
-      {/* Section Title & Count */}
+      {/* Section Title & Search */}
       <View style={styles.titleRow}>
         <View style={styles.titleWithBadge}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {viewMode === 'weekly'
-              ? 'Haftalık Varlık Kâr Dağılımı'
+              ? 'Haftalık Portföy Tablosu'
               : viewMode === 'total'
-              ? 'Toplam Varlık Durumu'
-              : 'Varlıklarım'}
+              ? 'Toplam Varlık Pozisyonları'
+              : 'Varlıklarım & Yatırımlarım'}
           </Text>
-          <View style={[styles.countBadge, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
-            <Text style={[styles.countText, { color: colors.primary }]}>{assets.length}</Text>
+          <View style={[styles.countBadge, { backgroundColor: colors.cardSecondary }]}>
+            <Text style={[styles.countText, { color: colors.primary }]}>{filteredAssets.length}</Text>
           </View>
         </View>
 
         <TouchableOpacity onPress={onAddNew} style={styles.addInlineBtn}>
-          <Ionicons name="add" size={18} color={colors.primary} />
+          <Ionicons name="add-circle" size={20} color={colors.primary} />
           <Text style={[styles.addInlineText, { color: colors.primary }]}>Ekle</Text>
         </TouchableOpacity>
       </View>
@@ -230,9 +241,9 @@ export const AssetList: React.FC<AssetListProps> = ({
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
-        <Ionicons name="search" size={18} color={colors.textMuted} />
+        <Ionicons name="search" size={17} color={colors.textMuted} />
         <TextInput
-          placeholder="Hisse, fon veya halka arz ara (KOCMT, TI2, THYAO...)"
+          placeholder="Hisse, kripto, fon veya halka arz ara..."
           placeholderTextColor={colors.textMuted}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -240,15 +251,18 @@ export const AssetList: React.FC<AssetListProps> = ({
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+            <Ionicons name="close-circle" size={17} color={colors.textMuted} />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Category Pills */}
+      {/* Category Pills with Count Badges */}
       <View style={styles.categoryScroll}>
         {CATEGORY_TABS.map((tab) => {
           const isSelected = selectedCategory === tab.key;
+          const count = categoryCounts[tab.key] || 0;
+          if (tab.key !== 'all' && count === 0 && selectedCategory !== tab.key) return null;
+
           return (
             <TouchableOpacity
               key={tab.key}
@@ -264,18 +278,18 @@ export const AssetList: React.FC<AssetListProps> = ({
                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                 setSelectedCategory(tab.key);
               }}
-              activeOpacity={0.7}
+              activeOpacity={0.75}
             >
               <Text
                 style={[
                   styles.categoryTabText,
                   {
                     color: isSelected ? '#FFFFFF' : colors.textSecondary,
-                    fontWeight: isSelected ? '700' : '500',
+                    fontWeight: isSelected ? '800' : '600',
                   },
                 ]}
               >
-                {tab.label}
+                {tab.label} {count > 0 ? `(${count})` : ''}
               </Text>
             </TouchableOpacity>
           );
@@ -285,18 +299,18 @@ export const AssetList: React.FC<AssetListProps> = ({
       {/* Asset Items */}
       {filteredAssets.length === 0 ? (
         <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Ionicons name="wallet-outline" size={48} color={colors.textMuted} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>Varlık Bulunamadı</Text>
+          <Ionicons name="wallet-outline" size={44} color={colors.textMuted} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Kayıtlı Varlık Bulunamadı</Text>
           <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
             {searchQuery
-              ? 'Arama kriterlerinize uygun hisse veya fon bulunamadı.'
-              : 'Henüz bu kategoride eklenmiş bir varlığınız yok.'}
+              ? 'Arama kriterlerinize uygun varlık bulunamadı.'
+              : 'Bu kategoride henüz portföyünüze eklenmiş bir varlık yok.'}
           </Text>
           <TouchableOpacity
             style={[styles.emptyAddBtn, { backgroundColor: colors.primary }]}
             onPress={onAddNew}
           >
-            <Text style={styles.emptyAddBtnText}>Varlık / Fon Ekle</Text>
+            <Text style={styles.emptyAddBtnText}>Hemen Varlık Ekle</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -336,7 +350,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     paddingVertical: 9,
     borderRadius: 999,
   },
@@ -348,7 +362,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 24,
+    borderRadius: 22,
     borderWidth: 1,
     marginBottom: 16,
   },
@@ -364,11 +378,12 @@ const styles = StyleSheet.create({
   weeklyBannerTitle: {
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
   },
   weeklyBannerAmount: {
     fontSize: 22,
     fontWeight: '900',
+    letterSpacing: -0.5,
   },
   weeklyBannerRight: {
     alignItems: 'flex-end',
@@ -394,29 +409,29 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionTitle: {
-    fontSize: 19,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.4,
   },
   countBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 2.5,
     borderRadius: 999,
   },
   countText: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 11.5,
+    fontWeight: '900',
   },
   addInlineBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   addInlineText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   searchBox: {
     flexDirection: 'row',
@@ -430,7 +445,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13.5,
     padding: 0,
   },
   categoryScroll: {
@@ -440,27 +455,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryTab: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 13,
+    paddingVertical: 6.5,
     borderRadius: 999,
     borderWidth: 1,
   },
   categoryTabText: {
-    fontSize: 12,
+    fontSize: 11.5,
   },
   listContainer: {
     marginTop: 4,
   },
   emptyState: {
     padding: 32,
-    borderRadius: 26,
+    borderRadius: 24,
     borderWidth: 1,
     alignItems: 'center',
     marginVertical: 12,
   },
   emptyTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
     marginTop: 12,
     marginBottom: 4,
   },
@@ -476,7 +491,7 @@ const styles = StyleSheet.create({
   },
   emptyAddBtnText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '800',
   },
 });

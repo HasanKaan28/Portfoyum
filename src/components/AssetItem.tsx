@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+﻿import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -24,21 +24,21 @@ export const AssetItem: React.FC<AssetItemProps> = ({
 }) => {
   const { colors, isDark } = useTheme();
 
-  // Soft mount fade-in animation
+  // Mount animation
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 300,
+      duration: 260,
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.98,
+      toValue: 0.975,
       useNativeDriver: true,
     }).start();
   };
@@ -73,23 +73,23 @@ export const AssetItem: React.FC<AssetItemProps> = ({
   let displayProfit = 0;
   let displayPercent = 0;
   let periodLabel = 'bugün';
-  let footerTitle = 'Günlük Kâr:';
+  let footerTitle = 'Günlük:';
 
   if (viewMode === 'weekly') {
     displayPercent = asset.change7d !== undefined ? asset.change7d : asset.change24h * 2.2;
     displayProfit = totalValue * (displayPercent / 100);
-    periodLabel = '7 gün';
-    footerTitle = 'Haftalık Kâr:';
+    periodLabel = '7g';
+    footerTitle = 'Haftalık:';
   } else if (viewMode === 'total') {
     displayProfit = totalProfit;
     displayPercent = totalProfitPercent;
-    periodLabel = 'toplam';
-    footerTitle = 'Toplam Kâr:';
+    periodLabel = 'net';
+    footerTitle = 'Toplam:';
   } else {
     displayPercent = asset.change24h || 0;
     displayProfit = totalValue * (displayPercent / 100);
     periodLabel = '24s';
-    footerTitle = 'Günlük Kâr:';
+    footerTitle = 'Günlük:';
   }
 
   const isProfitable = displayProfit >= 0;
@@ -97,10 +97,10 @@ export const AssetItem: React.FC<AssetItemProps> = ({
   const handleDeletePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
-      'Varlığı Sil',
-      `${asset.name} (${asset.symbol}) portföyünüzden kaldırılsın mı?`,
+      'Varlığı Kaldır',
+      `${asset.name} (${asset.symbol}) portföyden silinsin mi?`,
       [
-        { text: 'İptal', style: 'cancel' },
+        { text: 'Vazgeç', style: 'cancel' },
         {
           text: 'Sil',
           style: 'destructive',
@@ -113,29 +113,29 @@ export const AssetItem: React.FC<AssetItemProps> = ({
     );
   };
 
-  const getCategoryIcon = () => {
+  const getCategoryDetails = () => {
     switch (asset.category as string) {
       case 'halka_arz':
-        return { name: 'rocket-outline' as const, color: colors.halkaArz || '#EC4899' };
+        return { name: 'rocket-outline' as const, color: colors.halkaArz, bg: colors.halkaArz + '20' };
       case 'bist_stock':
       case 'stock':
-        return { name: 'bar-chart-outline' as const, color: colors.bist || '#2563EB' };
+        return { name: 'trending-up-outline' as const, color: colors.stock, bg: colors.stock + '20' };
       case 'tefas_fund':
       case 'fund':
-        return { name: 'layers-outline' as const, color: colors.tefas || '#8B5CF6' };
+        return { name: 'layers-outline' as const, color: colors.fund, bg: colors.fund + '20' };
       case 'gold':
       case 'commodity':
-        return { name: 'cube-outline' as const, color: colors.gold };
+        return { name: 'cube-outline' as const, color: colors.gold, bg: colors.gold + '20' };
       case 'crypto':
-        return { name: 'logo-bitcoin' as const, color: colors.crypto };
+        return { name: 'logo-bitcoin' as const, color: colors.crypto, bg: colors.crypto + '20' };
       case 'forex':
-        return { name: 'cash-outline' as const, color: colors.forex };
+        return { name: 'cash-outline' as const, color: colors.forex, bg: colors.forex + '20' };
       default:
-        return { name: 'wallet-outline' as const, color: colors.primary };
+        return { name: 'wallet-outline' as const, color: colors.primary, bg: colors.primary + '20' };
     }
   };
 
-  const catIcon = getCategoryIcon();
+  const cat = getCategoryDetails();
 
   return (
     <Animated.View
@@ -149,17 +149,21 @@ export const AssetItem: React.FC<AssetItemProps> = ({
         },
       ]}
     >
+      {/* Left decorative category accent indicator */}
+      <View style={[styles.leftAccentStrip, { backgroundColor: cat.color }]} />
+
       <TouchableOpacity
-        activeOpacity={0.95}
+        activeOpacity={0.94}
         onPress={() => onEdit(asset)}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        style={styles.cardInner}
       >
         <View style={styles.topRow}>
-          {/* Icon & Name */}
+          {/* Icon & Details */}
           <View style={styles.leftInfo}>
-            <View style={[styles.iconContainer, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
-              <Ionicons name={catIcon.name} size={22} color={catIcon.color} />
+            <View style={[styles.iconContainer, { backgroundColor: cat.bg }]}>
+              <Ionicons name={cat.name} size={20} color={cat.color} />
             </View>
             <View style={styles.nameColumn}>
               <View style={styles.symbolRow}>
@@ -178,9 +182,9 @@ export const AssetItem: React.FC<AssetItemProps> = ({
                       {
                         backgroundColor:
                           asset.broker === 'Ziraat'
-                            ? colors.ziraat + '25'
+                            ? colors.ziraat + '20'
                             : asset.broker === 'Midas'
-                            ? colors.midas + '25'
+                            ? colors.midas + '20'
                             : colors.cardSecondary,
                         borderColor:
                           asset.broker === 'Ziraat'
@@ -208,18 +212,6 @@ export const AssetItem: React.FC<AssetItemProps> = ({
                     </Text>
                   </View>
                 )}
-                {/* Change Pill based on active viewMode (Daily / Weekly / Total) */}
-                <View
-                  style={[
-                    styles.changePill,
-                    { backgroundColor: isProfitable ? colors.profitBg : colors.lossBg },
-                  ]}
-                >
-                  <Text style={[styles.changePillText, { color: isProfitable ? colors.profit : colors.loss }]}>
-                    {isProfitable ? '+' : ''}
-                    {displayPercent.toFixed(2)}%
-                  </Text>
-                </View>
               </View>
               <Text style={[styles.nameText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {asset.name}
@@ -227,23 +219,33 @@ export const AssetItem: React.FC<AssetItemProps> = ({
             </View>
           </View>
 
-          {/* Right side: Total Value */}
+          {/* Right side: Value & Amount */}
           <View style={styles.rightInfo}>
             <Text style={[styles.totalValueText, { color: colors.text }]}>
               {currSign}
               {totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
-            <Text style={[styles.amountText, { color: colors.textSecondary }]}>
-              {asset.amount.toLocaleString('tr-TR', { maximumFractionDigits: 4 })} adet
-            </Text>
+            {/* Change Pill */}
+            <View
+              style={[
+                styles.changePill,
+                { backgroundColor: isProfitable ? colors.profitBg : colors.lossBg },
+              ]}
+            >
+              <Text style={[styles.changePillText, { color: isProfitable ? colors.profit : colors.loss }]}>
+                {isProfitable ? '+' : ''}
+                {displayPercent.toFixed(2)}%
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Bottom details & Quick actions */}
+        {/* Bottom details & Actions */}
         <View style={[styles.bottomRow, { borderTopColor: colors.border }]}>
           <View style={styles.costInfo}>
             <Text style={[styles.costLabel, { color: colors.textMuted }]}>
-              Birim: {currSign}{unitCurrentPrice.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}
+              {asset.amount.toLocaleString('tr-TR', { maximumFractionDigits: 4 })} adet • Birim: {currSign}
+              {unitCurrentPrice.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}
             </Text>
             <View style={styles.profitInline}>
               <Text style={[styles.costLabel, { color: colors.textMuted }]}>{footerTitle} </Text>
@@ -259,15 +261,18 @@ export const AssetItem: React.FC<AssetItemProps> = ({
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={[styles.smallActionBtn, { backgroundColor: colors.cardSecondary }]}
-              onPress={() => onEdit(asset)}
+              onPress={() => {
+                Haptics.selectionAsync();
+                onEdit(asset);
+              }}
             >
-              <Ionicons name="create-outline" size={17} color={colors.primary} />
+              <Ionicons name="create-outline" size={16} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.smallActionBtn, { backgroundColor: isDark ? '#3E1F1F' : '#FEE2E2' }]}
+              style={[styles.smallActionBtn, { backgroundColor: isDark ? 'rgba(255, 77, 106, 0.15)' : '#FEE2E2' }]}
               onPress={handleDeletePress}
             >
-              <Ionicons name="trash-outline" size={17} color={colors.loss} />
+              <Ionicons name="trash-outline" size={16} color={colors.loss} />
             </TouchableOpacity>
           </View>
         </View>
@@ -278,23 +283,30 @@ export const AssetItem: React.FC<AssetItemProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
+    borderRadius: 22,
     borderWidth: 1,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     elevation: 2,
     overflow: 'hidden',
+    flexDirection: 'row',
+  },
+  leftAccentStrip: {
+    width: 4,
+  },
+  cardInner: {
+    flex: 1,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingTop: 14,
+    paddingBottom: 10,
   },
   leftInfo: {
     flexDirection: 'row',
@@ -303,9 +315,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -319,11 +331,12 @@ const styles = StyleSheet.create({
   },
   symbolText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
+    letterSpacing: -0.3,
   },
   tavanBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
     borderRadius: 999,
     borderWidth: 0.5,
   },
@@ -332,8 +345,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   brokerPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
     borderRadius: 999,
     borderWidth: 0.5,
   },
@@ -345,27 +358,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
+    marginTop: 3,
+    alignSelf: 'flex-end',
   },
   changePillText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   nameText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '500',
     marginTop: 2,
   },
   rightInfo: {
     alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   totalValueText: {
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  amountText: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 2,
+    fontSize: 16.5,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -393,12 +405,12 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   smallActionBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },

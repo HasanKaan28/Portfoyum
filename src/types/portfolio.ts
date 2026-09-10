@@ -1,4 +1,4 @@
-export type AssetCategory = 'bist_stock' | 'tefas_fund' | 'halka_arz' | 'gold' | 'forex';
+export type AssetCategory = 'bist_stock' | 'tefas_fund' | 'halka_arz' | 'gold' | 'forex' | 'crypto';
 
 export type CurrencyType = 'TRY' | 'USD';
 

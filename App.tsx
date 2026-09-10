@@ -327,6 +327,7 @@ function MainApp() {
             <PortfolioHeader
               summary={summary}
               currency={currency}
+              assets={assets}
               onToggleCurrency={handleToggleCurrency}
               onRefresh={() => refreshMarketData()}
               isRefreshing={isRefreshing}
